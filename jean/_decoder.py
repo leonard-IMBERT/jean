@@ -122,7 +122,7 @@ class GaussianSelector(IDecoder):
   """A decoder that will filter based on their true energy. The criterion is a gaussian
   centered on mean (MeV) with a scale of variance (MeV)
   """
-  def __init__(self, config: Optional[GaussianSelectorConfig], source_decoder: Optional[Type[IDecoder]] = None):
+  def __init__(self, config: Optional[GaussianSelectorConfig] = None, source_decoder: Optional[Type[IDecoder]] = None):
     if source_decoder is None:
       raise ValueError("This special decoder need a supplementary argument, the class of the target decoder")
     self._decoder = source_decoder()
