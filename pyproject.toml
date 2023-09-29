@@ -1,0 +1,15 @@
+[project]
+name = "jean"
+version = "0.1.0"
+authors = [
+  { name="Leonard Imbert", email="imbert418@gmail.com" },
+]
+description = "This project gives concrete implementations of the tools defined in the janne framework"
+readme = "README.md"
+requires-python = ">=3.9"
+
+[project.urls]
+homepage = "https://github.com/leonard-IMBERT/jean"
+
+[tool.pyright]
+
