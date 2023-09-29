@@ -111,6 +111,9 @@ class JeanDecoder(IDecoder):
           signal[:,0:-1]), axis=-1),
         truth)
 
+  def config(self):
+    return self._config
+
 @dataclass
 class GaussianSelectorConfig:
   sub_config: Any
@@ -169,3 +172,6 @@ class GaussianSelector(IDecoder):
 
 
     return (data, truth)
+
+  def config(self):
+    return self._config
