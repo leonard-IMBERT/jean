@@ -1,8 +1,10 @@
-from ._decoder import JeanDecoderConfig, JeanDecoder
+from ._decoder import JeanDecoderConfig, JeanDecoder, GaussianSelectorConfig, GaussianSelector
 from PyEDMReader.JaEDMReader import EventMode
 
 __all__ = [
         "JeanDecoder",
         "JeanDecoderConfig",
-        "EventMode"
+        "EventMode",
+        "GaussianSelectorConfig",
+        "GaussianSelector"
         ]

@@ -111,3 +111,61 @@ class JeanDecoder(IDecoder):
           signal[:,0:-1]), axis=-1),
         truth)
 
+@dataclass
+class GaussianSelectorConfig:
+  sub_config: Any
+  mean: float
+  variance: float
+  seed: int
+
+class GaussianSelector(IDecoder):
+  """A decoder that will filter based on their true energy. The criterion is a gaussian
+  centered on mean (MeV) with a scale of variance (MeV)
+  """
+  def __init__(self, config: Optional[GaussianSelectorConfig], source_decoder: Optional[Type[IDecoder]] = None):
+    if source_decoder is None:
+      raise ValueError("This special decoder need a supplementary argument, the class of the target decoder")
+    self._decoder = source_decoder()
+
+    self._mean = -1
+    self._variance = -1
+
+    self._config = config
+
+    self._random = np.random.default_rng(0)
+
+    self._has_warn = False
+
+    if config is not None:
+      self.initialize(config)
+
+  def initialize(self, config: GaussianSelectorConfig):
+    self._decoder.initialize(config.sub_config)
+
+    self._mean = config.mean
+    self._variance = config.variance
+
+    self._random = np.random.default_rng(config.seed)
+
+  def __next__(self):
+    data, truth = next(self._decoder)
+
+    if truth is None:
+      if not self._has_warn:
+        warnings.warn("Gaussian selector is only configured to work with truth value, which is missing."
+                      "Ignoring the selection. This warning will only trigger once")
+        self._has_warn = True
+      return (data, truth)
+
+    while self._random.uniform(0.0, 1.0) > gaussian(truth[0], self._mean, self._variance):
+      data, truth = next(self._decoder)
+
+      if truth is None:
+        if not self._has_warn:
+          warnings.warn("Gaussian selector is only configured to work with truth value, which is missing."
+                        "Ignoring the selection. This warning will only trigger once")
+          self._has_warn = True
+        return (data, truth)
+
+
+    return (data, truth)
