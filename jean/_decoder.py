@@ -1,4 +1,4 @@
-import janne
+from janne.interfaces import IDecoder
 from PyEDMReader.JaEDMReader import (
         EventMode,
         JaEDMReader,
@@ -6,12 +6,16 @@ from PyEDMReader.JaEDMReader import (
         )
 
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import Any, Optional, Tuple, Type
 from os import path
 import csv
+import warnings
 
 import numpy as np
 import numpy.typing as npt
+
+def gaussian(x, mu, sig):
+  return 1./(np.sqrt(2.*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2.)/2)
 
 Vector = Tuple[int, int, int]
 
@@ -32,11 +36,11 @@ class JeanDecoderConfig:
 
 def _read_lpmt_csv(lpmt_data_path: str) -> npt.NDArray[np.float64]:
   if not (path.exists(lpmt_data_path) and path.isfile(lpmt_data_path)):
-    raise FileNotFoundError(f"Lpmt data path is not an existing file")
+    raise FileNotFoundError("Lpmt data path is not an existing file")
 
   lpmts = []
-  with open(lpmt_data_path, newline='') as lpmt_file:
-    lpmts = [[lpmt[1], lpmt[2], lpmt[3]] for lpmt in  csv.reader(lpmt_file, delimiter=' ')]
+  with open(lpmt_data_path, newline="", encoding="utf-8") as lpmt_file:
+    lpmts = [[lpmt[1], lpmt[2], lpmt[3]] for lpmt in  csv.reader(lpmt_file, delimiter=" ")]
 
   lpmts = np.array(lpmts, dtype=np.float64)
 
@@ -46,13 +50,13 @@ def _read_lpmt_csv(lpmt_data_path: str) -> npt.NDArray[np.float64]:
 
 def _read_spmt_csv(spmt_data_path: str) -> npt.NDArray[np.float64]:
   if not (path.exists(spmt_data_path) and path.isfile(spmt_data_path)):
-    raise FileNotFoundError(f"Lpmt data path is not an existing file")
+    raise FileNotFoundError("Lpmt data path is not an existing file")
 
   spmts = []
-  with open(spmt_data_path, newline='') as spmt_file:
+  with open(spmt_data_path, newline="", encoding="utf-8") as spmt_file:
     spmts = [[np.sin(float(spmt[1])) * np.cos(float(spmt[2])),
               np.sin(float(spmt[1])) * np.sin(float(spmt[2])),
-              np.cos(float(spmt[1]))] for spmt in  csv.reader(spmt_file, delimiter=' ')]
+              np.cos(float(spmt[1]))] for spmt in  csv.reader(spmt_file, delimiter=" ")]
 
   spmts = np.array(spmts, dtype=np.float64) * JUNO_RADIUS
 
@@ -60,7 +64,13 @@ def _read_spmt_csv(spmt_data_path: str) -> npt.NDArray[np.float64]:
 
   return spmts
 
-class JeanDecoder(janne.interfaces.IDecoder):
+class JeanDecoder(IDecoder):
+  """The JEAN decoder. Takes data from a PyEDMReader and replace the pmtID
+  by their X, Y, Z position.
+
+  Use the values JUNO_RADIUS, N_LPMT, N_SPMT, SPMT_OFFSET defined in jean/_decoder.py
+  to compute X,Y,Z
+  """
 
   def __init__(self, config: Optional[JeanDecoderConfig] = None):
     self._config: Optional[JeanDecoderConfig] = config
