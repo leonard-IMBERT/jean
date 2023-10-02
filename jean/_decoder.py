@@ -1,5 +1,5 @@
 from janne.interfaces import IDecoder
-from PyEDMReader.JaEDMReader import (
+from PyEDMReader import (
         EventMode,
         JaEDMReader,
         JaEDMReaderConfig,
