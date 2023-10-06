@@ -110,17 +110,18 @@ class JeanDecoder(IDecoder):
       acc_s = np.zeros((N_SPMT, 2))
 
       for hit in signal:
-        if hit[0] < SPMT_OFFSET:
-          if hit[2] < acc_l[hit[0], 1] or acc_l[hit[0], 0] == 0:
-            acc_l[hit[0], 1] = hit[2]
+        hit_id = int(hit[0])
+        if hit_id < SPMT_OFFSET:
+          if hit[2] < acc_l[hit_id, 1] or acc_l[hit_id, 0] == 0:
+            acc_l[hit_id, 1] = hit[2]
 
-          acc_l[hit[0], 0] += hit[1]
+          acc_l[hit_id, 0] += hit[1]
         else:
-          s_id = hit[0] - SPMT_OFFSET
+          s_id = hit_id - SPMT_OFFSET
           if hit[2] < acc_s[s_id, 1] or acc_s[s_id, 0] == 0:
-            acc_s[hit[0], 1] = hit[2]
+            acc_s[s_id, 1] = hit[2]
 
-          acc_s[hit[0], 0] += hit[1]
+          acc_s[s_id, 0] += hit[1]
 
 
       s_l = np.concatenate((np.arange(0, N_LPMT).reshape((N_LPMT, 1)), acc_l), axis=-1)
