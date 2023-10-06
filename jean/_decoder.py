@@ -104,11 +104,40 @@ class JeanDecoder(IDecoder):
 
     signal, truth = next(self._decoder)
 
+    if self._config.mode == EventMode.DETSIM:
+      # Grouping PMT
+      acc_l = np.zeros((N_LPMT, 2))
+      acc_s = np.zeros((N_SPMT, 2))
+
+      for hit in signal:
+        if hit[0] < SPMT_OFFSET:
+          if hit[2] < acc_l[hit[0], 1] or acc_l[hit[0], 0] == 0:
+            acc_l[hit[0], 1] = hit[2]
+
+          acc_l[hit[0], 0] += hit[1]
+        else:
+          s_id = hit[0] - SPMT_OFFSET
+          if hit[2] < acc_s[s_id, 1] or acc_s[s_id, 0] == 0:
+            acc_s[hit[0], 1] = hit[2]
+
+          acc_s[hit[0], 0] += hit[1]
+
+
+      s_l = np.concatenate((np.arange(0, N_LPMT).reshape((N_LPMT, 1)), acc_l), axis=-1)
+      s_l = s_l[s_l[:, 1] > 0]
+
+      s_s = np.concatenate((np.arange(0, N_SPMT).reshape((N_SPMT, 1)), acc_s), axis=-1)
+      s_s = s_s[s_s[:, 1] > 0]
+
+      s = np.concatenate((s_l, s_s), axis=0)
+    else:
+      s = signal
+
 
     return (
         np.concatenate((
-          self._all_data[signal[:, 0].astype(int) % (SPMT_OFFSET - N_SPMT)],
-          signal[:,0:-1]), axis=-1),
+          self._all_data[s[:, 0].astype(int) % (SPMT_OFFSET - N_LPMT)],
+          s[:,0:-1]), axis=-1),
         truth)
 
   def config(self):
