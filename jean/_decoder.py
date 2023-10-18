@@ -105,32 +105,17 @@ class JeanDecoder(IDecoder):
     signal, truth = next(self._decoder)
 
     if self._config.mode == EventMode.DETSIM:
-      # Grouping PMT
-      acc_l = np.zeros((N_LPMT, 2))
-      acc_s = np.zeros((N_SPMT, 2))
+
+      pms = []
 
       for hit in signal:
         hit_id = int(hit[0])
-        if hit_id < SPMT_OFFSET:
-          if hit[2] < acc_l[hit_id, 1] or acc_l[hit_id, 0] == 0:
-            acc_l[hit_id, 1] = hit[2]
 
-          acc_l[hit_id, 0] += hit[1]
-        else:
-          s_id = hit_id - SPMT_OFFSET
-          if hit[2] < acc_s[s_id, 1] or acc_s[s_id, 0] == 0:
-            acc_s[s_id, 1] = hit[2]
+        charge = np.sum(signal[signal[:, 0] == hit_id, 1])
+        time = np.min(signal[signal[:, 0] == hit_id, 2])
+        pms.append([hit_id, charge, time])
 
-          acc_s[s_id, 0] += hit[1]
-
-
-      s_l = np.concatenate((np.arange(0, N_LPMT).reshape((N_LPMT, 1)), acc_l), axis=-1)
-      s_l = s_l[s_l[:, 1] > 0]
-
-      s_s = np.concatenate((np.arange(0, N_SPMT).reshape((N_SPMT, 1)), acc_s), axis=-1)
-      s_s = s_s[s_s[:, 1] > 0]
-
-      s = np.concatenate((s_l, s_s), axis=0)
+      s = np.array(pms)
     else:
       s = signal
 
