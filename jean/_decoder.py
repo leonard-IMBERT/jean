@@ -137,6 +137,7 @@ class JeanDecoder(IDecoder):
 
     return (
         np.concatenate((
+          s[:, 0:1],
           self._all_data[s[:, 0].astype(int) % (SPMT_OFFSET - N_LPMT)],
           s[:,1:]), axis=-1),
         truth)
