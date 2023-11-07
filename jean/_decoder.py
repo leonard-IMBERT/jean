@@ -127,7 +127,7 @@ class JeanDecoder(IDecoder):
       s_l = np.concatenate((np.arange(0, N_LPMT).reshape((N_LPMT, 1)), acc_l), axis=-1)
       s_l = s_l[s_l[:, 1] > 0]
 
-      s_s = np.concatenate((np.arange(0, N_SPMT).reshape((N_SPMT, 1)), acc_s), axis=-1)
+      s_s = np.concatenate((np.arange(SPMT_OFFSET, SPMT_OFFSET + N_SPMT).reshape((N_SPMT, 1)), acc_s), axis=-1)
       s_s = s_s[s_s[:, 1] > 0]
 
       s = np.concatenate((s_l, s_s), axis=0)
